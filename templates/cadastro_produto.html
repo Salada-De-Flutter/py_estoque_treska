@@ -141,6 +141,11 @@ hr {
                         <button type="submit">Registrar Saída</button>
                     </form>
                 </td>
+                <td>
+                    <form action="{{ url_for('tela_editar_produto', produto_id = produto.id)}}" method = 'POST'>
+                        <input type="submit" value="Editar Produto">
+                    </form>
+                </td>
             </tr>
             {% else %}
                 <tr>

@@ -5,6 +5,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import psycopg2
 import psycopg2.extras
 import os
+from flask_sqlalchemy import SQLAlchemy
 
 # Configuração da aplicação Flask
 app = Flask(__name__)
@@ -14,11 +15,30 @@ DB_USER = 'postgres'
 DB_PASSWORD = 'wcc@2023'
 DB_HOST = 'localhost'
 DB_NAME = 'py_estoque_3b'
-DB_PORT = '5433'
+DB_PORT = '5432'
 # URL-encode a senha para garantir que caracteres especiais sejam tratados corretamente
 ENCODED_DB_PASSWORD = quote_plus(DB_PASSWORD)
 
 app.config['DATABASE_URL'] = f"postgresql://{DB_USER}:{ENCODED_DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+app.config['SQLALCHEMY_DATABASE_URI'] = f"postgresql://{DB_USER}:{ENCODED_DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+dba = SQLAlchemy(app)
+
+try:
+    with app.app_context():
+        dba.engine.connect()
+        print("DATABASE CONECTADO")
+except Exception as e:
+    print(f"DATABASE NÃO CONECTADO: {e}")       
+
+
+class Produtos(dba.Model):
+    __tablename__ = 'produtos'
+    id = dba.Column(dba.Integer, primary_key = True)
+    nome = dba.Column(dba.Text)
+    descricao = dba.Column(dba.Text)
+    quantidade = dba.Column(dba.Integer)
+    preco = dba.Column(dba.Integer)
+    quantidade_minima = dba.Column(dba.Integer)
 
 def get_db():
     if 'db' not in g:
@@ -160,6 +180,25 @@ def saida_produto(produto_id):
 def estoque():
     movimentacoes = query_db( 'SELECT m.*, u.nome as usuario_nome, p.nome as produto_nome FROM movimentacao_estoque AS m JOIN usuarios AS u ON m.usuario_id = u.id JOIN produtos AS p ON m.produto_id = p.id ORDER BY m.data_movimentacao DESC')
     return render_template('estoque.html', movimentacoes=movimentacoes, usuario=session.get('usuario_nome'))
+
+@app.route('/tela_editar_produto/<int:produto_id>', methods=['GET', 'POST'])
+def tela_editar_produto(produto_id):
+    produto = Produtos.query.filter_by(id = produto_id).first()
+    print(f'Produto pesquisado: {produto.id}' )
+
+    return render_template('editar_produto.html', produto = produto)
+
+@app.route('/editar_produto', methods = ['POST', 'GET'])
+def editar_produto():
+
+    produto_id = int(request.form['produto_id'])
+    produto_nome = request.form['nome']
+    produto = Produtos.query.filter_by(id = produto_id).first()
+    produto.nome = produto_nome
+    print(f"Produto: {produto.nome}")
+
+    dba.session.commit()
+    return redirect(url_for('cadastro_produto'))
 
 if __name__ == '__main__':
     app.run(debug=True)

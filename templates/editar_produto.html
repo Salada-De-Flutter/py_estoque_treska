@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Tela de edição do produto {{produto.nome}}</h1>
+        <form action="/editar_produto" methods = 'POST'>
+
+        <input type="text" name="produto_id" value="{{produto.id}}" >
+        <input type="text" name="nome" value="{{produto.nome}}">
+        <input type="submit" value="Editar Produto">
+    </form>
+</body>
+</html>
