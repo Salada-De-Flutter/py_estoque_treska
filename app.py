@@ -15,7 +15,7 @@ DB_USER = 'postgres'
 DB_PASSWORD = 'wcc@2023'
 DB_HOST = 'localhost'
 DB_NAME = 'py_estoque_3b'
-DB_PORT = '5432'
+DB_PORT = '5433'
 # URL-encode a senha para garantir que caracteres especiais sejam tratados corretamente
 ENCODED_DB_PASSWORD = quote_plus(DB_PASSWORD)
 
@@ -192,10 +192,14 @@ def tela_editar_produto(produto_id):
 def editar_produto():
 
     produto_id = int(request.form['produto_id'])
-    produto_nome = request.form['nome']
+    
     produto = Produtos.query.filter_by(id = produto_id).first()
-    produto.nome = produto_nome
-    print(f"Produto: {produto.nome}")
+    
+    produto.nome = request.form['nome']
+    produto.descricao = request.form['descricao']
+    produto.quantidade = int(request.form['quantidade'])
+    produto.preco = float(request.form['preco'])
+    produto.quantidade_minima = int(request.form['quantidade_minima'])
 
     dba.session.commit()
     return redirect(url_for('cadastro_produto'))
